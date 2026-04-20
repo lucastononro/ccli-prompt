@@ -1,0 +1,13 @@
+.DS_Store
+*.log
+
+# local install artifacts
+config
+*.sock
+__pycache__/
+*.pyc
+
+# build / packaging (for the future pip refactor)
+dist/
+build/
+*.egg-info/

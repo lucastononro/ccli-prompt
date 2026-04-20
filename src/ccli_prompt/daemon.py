@@ -19,8 +19,8 @@ import sys
 import time
 from pathlib import Path
 
-SCRIPT_DIR = Path(__file__).resolve().parent
 USER = os.environ.get("USER", "user")
+USER_INSTALL_DIR = Path.home() / ".ccli-prompt"
 
 API_HOST = "api.anthropic.com"
 API_PATH = "/v1/messages"
@@ -51,10 +51,31 @@ def _load_config_env() -> None:
 _load_config_env()
 
 SOCKET_PATH = os.environ.get("CCLI_SOCKET", f"/tmp/ccli-{USER}.sock")
-PROMPT_FILE = Path(os.environ.get("CCLI_SYSTEM_PROMPT_FILE", SCRIPT_DIR / "prompt.md"))
 MODEL = os.environ.get("CCLI_MODEL", "claude-haiku-4-5")
 MAX_TOKENS = int(os.environ.get("CCLI_MAX_TOKENS", "400"))
 IDLE_TIMEOUT = int(os.environ.get("CCLI_IDLE_TIMEOUT", "1800"))  # 30 minutes
+
+
+def _load_system_prompt() -> str:
+    """Prefer the user's editable copy at ~/.ccli-prompt/prompt.md, fall back to
+    the packaged default. An explicit CCLI_SYSTEM_PROMPT_FILE wins over both."""
+    override = os.environ.get("CCLI_SYSTEM_PROMPT_FILE")
+    if override:
+        try:
+            return Path(override).read_text(encoding="utf-8")
+        except OSError:
+            pass
+    user_prompt = USER_INSTALL_DIR / "prompt.md"
+    if user_prompt.exists():
+        try:
+            return user_prompt.read_text(encoding="utf-8")
+        except OSError:
+            pass
+    try:
+        from importlib.resources import files
+        return (files("ccli_prompt") / "data" / "prompt.md").read_text(encoding="utf-8")
+    except Exception:
+        return ""
 
 
 class TokenError(RuntimeError):
@@ -125,7 +146,7 @@ class Client:
         self._ssl_ctx = ssl.create_default_context()
         self._conn: http.client.HTTPSConnection | None = None
         self._token = load_token()
-        self._system_prompt = PROMPT_FILE.read_text() if PROMPT_FILE.exists() else ""
+        self._system_prompt = _load_system_prompt()
 
     def _conn_get(self) -> http.client.HTTPSConnection:
         if self._conn is None:

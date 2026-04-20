@@ -6,7 +6,10 @@ autoload -Uz read-from-minibuffer
 
 typeset -g CCLI_DIR="${${(%):-%x}:A:h}"
 typeset -g CCLI_SOCKET="${CCLI_SOCKET:-/tmp/ccli-${USER}.sock}"
-typeset -g CCLI_DAEMON="${CCLI_DAEMON:-$CCLI_DIR/daemon.py}"
+# Daemon is invoked as a module from the pip-installed package so
+# `pip install -U ccli-prompt` auto-updates the daemon code. Override with
+# `export CCLI_DAEMON_CMD="python3 /path/to/daemon.py"` if running from source.
+typeset -g CCLI_DAEMON_CMD="${CCLI_DAEMON_CMD:-python3 -m ccli_prompt.daemon}"
 
 # Give Esc-then-K more than the default 0.4s chord window, but don't override
 # a larger value the user may have set.
@@ -20,7 +23,7 @@ _ccli_ensure_daemon() {
   fi
   [[ -S "$CCLI_SOCKET" ]] && rm -f "$CCLI_SOCKET"
 
-  (nohup python3 "$CCLI_DAEMON" </dev/null >/dev/null 2>&1 &) 2>/dev/null
+  (nohup ${=CCLI_DAEMON_CMD} </dev/null >/dev/null 2>&1 &) 2>/dev/null
 
   local i
   for i in {1..40}; do
@@ -48,7 +51,7 @@ _ccli_widget() {
 
   if ! _ccli_ensure_daemon; then
     print -n $'\r\e[2K'
-    print -P "%F{red}✗ couldn't start ccli-daemon (python3 $CCLI_DAEMON)%f"
+    print -P "%F{red}✗ couldn't start ccli-daemon ($CCLI_DAEMON_CMD)%f"
     BUFFER="$saved_buffer"
     CURSOR=${#BUFFER}
     zle reset-prompt

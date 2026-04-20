@@ -1,0 +1,48 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ccli-prompt"
+version = "0.1.0"
+description = "Cursor's Cmd+K inline prompt, but for your zsh terminal — powered by Claude."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Lucas Tononro" }]
+keywords = ["cli", "claude", "zsh", "terminal", "productivity", "anthropic"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Utilities",
+    "Topic :: Terminals",
+]
+dependencies = []
+
+[project.scripts]
+ccli-prompt = "ccli_prompt.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/lucastononro/ccli-prompt"
+Repository = "https://github.com/lucastononro/ccli-prompt.git"
+Issues = "https://github.com/lucastononro/ccli-prompt/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ccli_prompt"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/ccli_prompt",
+    "README.md",
+    "LICENSE",
+    "pyproject.toml",
+]

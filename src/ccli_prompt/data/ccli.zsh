@@ -6,10 +6,11 @@ autoload -Uz read-from-minibuffer
 
 typeset -g CCLI_DIR="${${(%):-%x}:A:h}"
 typeset -g CCLI_SOCKET="${CCLI_SOCKET:-/tmp/ccli-${USER}.sock}"
-# Daemon is invoked as a module from the pip-installed package so
-# `pip install -U ccli-prompt` auto-updates the daemon code. Override with
-# `export CCLI_DAEMON_CMD="python3 /path/to/daemon.py"` if running from source.
-typeset -g CCLI_DAEMON_CMD="${CCLI_DAEMON_CMD:-python3 -m ccli_prompt.daemon}"
+# Use the `ccli-prompt` CLI binary that pip/pipx put on PATH. This works
+# regardless of whether the package is in a pipx-isolated venv or a global
+# Python. Override with `export CCLI_DAEMON_CMD="python3 /path/to/daemon.py"`
+# if you're running from a source checkout.
+typeset -g CCLI_DAEMON_CMD="${CCLI_DAEMON_CMD:-ccli-prompt daemon}"
 
 # Give Esc-then-K more than the default 0.4s chord window, but don't override
 # a larger value the user may have set.
